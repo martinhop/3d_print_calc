@@ -17,7 +17,7 @@ model clean-up time ---> Currently setup as hard code
 
 fixed figures
 
-profit percentage ---> function profit based on fixed 50 percent
+profit percentage ---> function profçit based on fixed 50 percent
 depreciation ---> In Printer_3d Class ---> function fixed_overhead based on lifespan, cost, working time
 maintenance cost ---> In Printer_3d Class ---> function maintenance_cost
 electric --->In Printer_3d Class ---> function power_cost_per_hour
@@ -32,36 +32,6 @@ electric --->In Printer_3d Class ---> function power_cost_per_hour
 #printer_vars
 
 import pickle
-
-def save_printer_defaults(printer_cost):
-    printer_vars = printer_cost
-    with open('printer_vars.pkl','wb') as printer_vars_stored:
-        pickle.dump(printer_vars, printer_vars_stored, pickle.HIGHEST_PROTOCOL)
-    printer_vars_stored.close()
-
-# read/write python dict to/from from the file
-
-def open_defaults(name):
-    with open(name + '.pkl','rb') as default_open:
-        name = pickle.load(default_open)
-    default_open.close()
-    return name
-
-material_vars = {"PLA": 20.95, "PET-G": 27.15, "ABS": 28.04}
-
-def save_defaults(name, vars):
-    with open(name + '.pkl','wb') as default_save:
-        pickle.dump(vars, default_save, pickle.HIGHEST_PROTOCOL)
-    default_save.close()
-
-#printer_vars = open_printer_defaults()
-
-save_defaults('material_vars', material_vars)
-
-printer_vars = open_defaults('printer_vars')
-material_vars = open_defaults('material_vars')
-print (printer_vars)
-print (material_vars)
 
 class Printer_3d(object):
     """Setup for printer"""
@@ -107,6 +77,52 @@ class Material():
     def material_cost(self, weight):
         return (self.cost[self.material]/1000)*weight
 
+# read/write python dict to/from from the file
+
+def open_defaults(name):
+    with open(name + '.pkl','rb') as default_open:
+        name = pickle.load(default_open)
+    default_open.close()
+    return name
+
+material_vars = {"PLA": 20.95, "PET-G": 27.15, "ABS": 28.04}
+
+def save_defaults(name, vars):
+    with open(name + '.pkl','wb') as default_save:
+        pickle.dump(vars, default_save, pickle.HIGHEST_PROTOCOL)
+    default_save.close()
+
+#printer_vars = open_printer_defaults()
+
+
+
+
+#setup printer costs
+def printer_costs(update=False):
+
+    global printer_vars
+
+    if update:
+        for key in printer_vars:
+            printer_vars[key] = float(input(f"Enter {key}:\n"))
+            save_defaults('printer_vars', printer_vars)
+        update = False
+    else:
+        printer_vars = open_defaults('printer_vars')
+    return printer_vars
+
+def material_costs(update=False):
+
+    global material_vars
+
+    if update:
+        for key in material_vars:
+            material_vars[key] = float(input(f"Enter {key}:\n"))
+            save_defaults('material_vars', material_vars)
+        update = False
+    else:
+        material_vars = open_defaults('material_vars')
+    return material_vars
 
 def profit(cost):
     return cost * 1.5
@@ -133,6 +149,9 @@ def quotation_cost(material, print_time, setup, finishing):
 
     return round(profit(cost_price), 2)
 
+#printer_vars = open_defaults('printer_vars')
+printer_vars = printer_costs()
+material_vars = material_costs()
 
 #sets users material type
 
@@ -144,25 +163,17 @@ while True:
         my_material = Material(material_type)
         break
     else:
+        #Calls setup cost functions if required
         if material_type.lower() == 'setup':
             material_type = input("Setup Printer/Material/Profit?")
             if material_type.lower() == 'printer':
-                printer_vars['cost'] = float(input("Enter printers cost:\n"))
-                printer_vars['life_expectancy'] = int(input("Enter printers life expectancy:\n"))
-                printer_vars['yearly_work_time'] = float(input("Enter estimated yearly work time:\n"))
-                printer_vars['bed_surface'] = float(input("Enter cost of bed surface per year:\n"))
-                printer_vars['belts'] = float(input("Enter cost of belts per year:\n"))
-                printer_vars['nozzles'] = float(input("Enter cost of nozzles per year:\n"))
-                printer_vars['hotend'] = float(input("Enter cost of hotend parts per year:\n"))
-                printer_vars['power_per_hour'] = float(input("Enter power comsumption per hour:\n"))
-                printer_vars['power_price'] = float(input("Enter power price per year:\n"))
-                save_printer_defaults(printer_vars)
+                printer_vars = printer_costs(True)
 
             if material_type.lower() == 'material':
-            pass
+                pass
 
             if material_type.lower() == 'profit':
-                pass
+                save_defaults('material_vars', material_vars)
 
             continue
         print('Please enter a valid material type')
@@ -218,7 +229,8 @@ while True:
         my_finishing = finishing_cost(finishing_time)
         break
 
-my_printer = Printer_3d(printer_vars['cost'], printer_vars['life_expectancy'], printer_vars['yearly_work_time'], printer_vars['bed_surface'], printer_vars['belts'], printer_vars['nozzles'], printer_vars['hotend'], printer_vars['power_per_hour'], printer_vars['power_price'])
+
+my_printer = Printer_3d(printer_vars['printer cost'], printer_vars['life expectancy'], printer_vars['yearly work time'], printer_vars['bed surface'], printer_vars['belts'], printer_vars['nozzles'], printer_vars['hotend'], printer_vars['power per hour'], printer_vars['power price'])
 cost = quotation_cost(my_material, my_print_time, my_setup, my_finishing)
 
 print(f'Print Price: £{cost}')
