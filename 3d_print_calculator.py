@@ -68,14 +68,14 @@ class Printer_3d(object):
 
 class Material():
 
-    def __init__(self, material):
+    def __init__(self, material, cost):
         self.material = material
         #['PLA', 'PET-G', 'ABS']
         #cost per KG
-        self.cost = {"PLA": 20.95, "PET-G": 27.15, "ABS": 28.04}
+        self.cost = cost
 
     def material_cost(self, weight):
-        return (self.cost[self.material]/1000)*weight
+        return (self.cost/1000)*weight
 
 # read/write python dict to/from from the file
 
@@ -85,17 +85,12 @@ def open_defaults(name):
     default_open.close()
     return name
 
-material_vars = {"PLA": 20.95, "PET-G": 27.15, "ABS": 28.04}
+#material_vars = {"PLA": 20.95, "PET-G": 27.15, "ABS": 28.04}
 
 def save_defaults(name, vars):
     with open(name + '.pkl','wb') as default_save:
         pickle.dump(vars, default_save, pickle.HIGHEST_PROTOCOL)
     default_save.close()
-
-#printer_vars = open_printer_defaults()
-
-
-
 
 #setup printer costs
 def printer_costs(update=False):
@@ -124,8 +119,26 @@ def material_costs(update=False):
         material_vars = open_defaults('material_vars')
     return material_vars
 
-def profit(cost):
-    return cost * 1.5
+#calls / sets profit margin
+
+def profit_rate(update=False):
+
+    global profit
+
+    if update:
+        profit = int(input(f"Enter profit percentage:\n"))
+        save_defaults('profit', profit)
+        update = False
+    else:
+        profit = open_defaults('profit')
+    return profit
+
+
+def profit_calc(cost):
+
+    profit = 1 + (profit_rate()/100)
+
+    return cost * profit
 
 def setup_cost(time):
 
@@ -147,7 +160,7 @@ def quotation_cost(material, print_time, setup, finishing):
 
     cost_price = overhead + my_material.material_cost(material_weight) + my_setup + my_finishing
 
-    return round(profit(cost_price), 2)
+    return round(profit_calc(cost_price), 2)
 
 #printer_vars = open_defaults('printer_vars')
 printer_vars = printer_costs()
@@ -160,7 +173,7 @@ while True:
     material_type = input("Please select material type: PLA / PET-G / ABS\n(Type 'setup' to adjust costings)\n").upper()
 
     if material_type == 'PLA' or material_type.upper() == 'PET-G' or material_type.upper() == 'ABS':
-        my_material = Material(material_type)
+        my_material = Material(material_type, material_vars[material_type])
         break
     else:
         #Calls setup cost functions if required
@@ -170,11 +183,10 @@ while True:
                 printer_vars = printer_costs(True)
 
             if material_type.lower() == 'material':
-                pass
+                material_vars = material_costs(True)
 
             if material_type.lower() == 'profit':
-                save_defaults('material_vars', material_vars)
-
+                profit = profit_rate(True)
             continue
         print('Please enter a valid material type')
         continue
