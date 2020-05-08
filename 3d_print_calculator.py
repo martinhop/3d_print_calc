@@ -97,10 +97,17 @@ def printer_costs(update=False):
 
     global printer_vars
 
-    if update:
+    while update:
         for key in printer_vars:
-            printer_vars[key] = float(input(f"Enter {key}:\n"))
-            save_defaults('printer_vars', printer_vars)
+            correct = False
+            while(not correct):
+                try:
+                    printer_vars[key] = float(input(f"Enter {key}:\n"))
+                    correct = True
+                except ValueError:
+                    print ('Please enter a valid input')
+                    correct = False
+        save_defaults('printer_vars', printer_vars)
         update = False
     else:
         printer_vars = open_defaults('printer_vars')
@@ -110,11 +117,19 @@ def material_costs(update=False):
 
     global material_vars
 
-    if update:
+    while update:
         for key in material_vars:
-            material_vars[key] = float(input(f"Enter {key}:\n"))
-            save_defaults('material_vars', material_vars)
+            correct = False
+            while(not correct):
+                try:
+                    material_vars[key] = float(input(f"Enter {key}:\n"))
+                    correct = True
+                except ValueError:
+                    print ('Please enter a valid input')
+                    correct = False
+        save_defaults('material_vars', material_vars)
         update = False
+
     else:
         material_vars = open_defaults('material_vars')
     return material_vars
@@ -125,10 +140,14 @@ def profit_rate(update=False):
 
     global profit
 
-    if update:
-        profit = int(input(f"Enter profit percentage:\n"))
-        save_defaults('profit', profit)
-        update = False
+    while update:
+        try:
+            profit = int(input(f"Enter profit percentage:\n"))
+            save_defaults('profit', profit)
+            update = False
+        except ValueError:
+            print ('Please enter a valid percentage')
+            continue
     else:
         profit = open_defaults('profit')
     return profit
@@ -244,5 +263,6 @@ while True:
 
 my_printer = Printer_3d(printer_vars['printer cost'], printer_vars['life expectancy'], printer_vars['yearly work time'], printer_vars['bed surface'], printer_vars['belts'], printer_vars['nozzles'], printer_vars['hotend'], printer_vars['power per hour'], printer_vars['power price'])
 cost = quotation_cost(my_material, my_print_time, my_setup, my_finishing)
+
 
 print(f'Print Price: £{cost}')
